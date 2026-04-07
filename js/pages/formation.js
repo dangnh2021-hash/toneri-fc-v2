@@ -847,9 +847,45 @@ function openScorerModal(resultId, matchId, homeId, awayId) {
 }
 
 function renderScorerRow(player) {
+  const inputStyle = 'width:48px;font-size:0.85rem;padding:4px;text-align:center;background:#374151;border:1px solid #4b5563;border-radius:8px;color:#fff';
   return `
     <div class="flex items-center gap-3 bg-gray-700 rounded-xl p-3">
       <div class="flex-1 text-white font-medium text-sm">${player.full_name}</div>
       <div class="flex items-center gap-2">
         <span class="text-gray-400 text-xs">⚽</span>
-        <input type="number" min="0" max="20" value="0" class="score-input" style="width:48px;f
+        <input type="number" min="0" max="20" value="0" style="${inputStyle}" id="scorer-goals-${player.user_id}">
+        <span class="text-gray-400 text-xs ml-1">🅰️</span>
+        <input type="number" min="0" max="20" value="0" style="${inputStyle}" id="scorer-assists-${player.user_id}">
+      </div>
+    </div>
+  `;
+}
+
+async function submitScorers(matchId, playerIds) {
+  const scorers = playerIds
+    .map(userId => ({
+      user_id: userId,
+      goals:   parseInt(document.getElementById(`scorer-goals-${userId}`)?.value)   || 0,
+      assists: parseInt(document.getElementById(`scorer-assists-${userId}`)?.value) || 0,
+    }))
+    .filter(s => s.goals > 0 || s.assists > 0);
+
+  showLoading(true);
+  try {
+    const res = await API.saveMatchResult({
+      match_id: matchId,
+      status: 'update_scorers',
+      scorers
+    });
+    if (res.success) {
+      showToast('Đã lưu thống kê ghi bàn!', 'success');
+      closeModal();
+    } else {
+      showToast(res.error || 'Lỗi lưu thống kê', 'error');
+    }
+  } catch (e) {
+    showToast('Lỗi kết nối', 'error');
+  } finally {
+    showLoading(false);
+  }
+}
