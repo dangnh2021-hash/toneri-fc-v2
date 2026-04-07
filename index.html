@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Toneri FC</title>
+
+  <!-- PWA / iOS Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Toneri FC" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#166534" />
+  <meta name="description" content="Quản lý đội bóng Toneri Football Club - lịch thi đấu, vote tham gia, đội hình" />
+
+  <!-- Icons -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { DEFAULT: '#166534', light: '#22c55e', dark: '#14532d' },
+            gold: { DEFAULT: '#f59e0b', light: '#fcd34d' }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Logo -->
+      <div class="text-center mb-8">
+        <div class="text-6xl mb-3">⚽</div>
+        <h1 class="text-3xl font-bold text-white">Toneri FC</h1>
+        <p class="text-gray-400 mt-1">Quản lý đội bóng chuyên nghiệp</p>
+      </div>
+
+      <!-- Auth Card -->
+      <div class="bg-gray-800 rounded-2xl shadow-2xl overflow-hidden">
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-700">
+          <button id="tab-login" onclick="showAuthTab('login')"
+            class="flex-1 py-4 text-sm font-semibold text-green-400 border-b-2 border-green-400 transition-colors">
+            Đăng nhập
+          </button>
+          <button id="tab-register" onclick="showAuthTab('register')"
+            class="flex-1 py-4 text-sm font-semibold text-gray-400 border-b-2 border-transparent transition-colors">
+            Đăng ký
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="form-login" class="p-6">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Username</label>
+              <input id="login-username" type="text" placeholder="Nhập username"
+                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition" />
+            </div>
+            <div>
+              <label class="block text-sm text-gray-400 mb-1">Password</label>
+              <input id="login-password" type="password" placeholder="Nhập password"
+                class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 transition" />
+            </div>
+            <div id="login-error" class="hidden text-red-400 text-sm text-center"></div>
+            <button onclick="handleLogin()"
+              class="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 rounded-lg transition-colors mt-2">
+              <i class="fas fa-sign-in-alt mr-2"></i> Đăng nhập
+            </button>
+          </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="form-register" class="p-6 hidden">
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Username *</label>
+                <input id="reg-username" type="text" placeholder="username"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 text-sm" />
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Họ tên *</label>
+                <input id="reg-fullname" type="text" placeholder="Nguyễn Văn A"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 text-sm" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Password *</label>
+                <input id="reg-password" type="password" placeholder="••••••"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 text-sm" />
+              </div>
+              <div>
+                <label class="block text-sm text-gray-400 mb-1">Phone</label>
+                <input id="reg-phone" type="text" placeholder="0912..."
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:border-green-400 text-sm" />
+              </div>
+            </div>
+
+            <!-- Positions -->
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Vị trí *</label>
+              <div class="grid grid-cols-4 gap-2">
+                <label class="pos-checkbox" data-pos="FW">
+                  <input type="checkbox" value="FW" class="hidden" />
+                  <span class="block text-center py-2 px-3 rounded-lg border border-gray-600 cursor-pointer text-sm font-semibold hover:border-orange-400 transition">FW</span>
+                </label>
+                <label class="pos-checkbox" data-pos="MF">
+                  <input type="checkbox" value="MF" class="hidden" />
+                  <span class="block text-center py-2 px-3 rounded-lg border border-gray-600 cursor-pointer text-sm font-semibold hover:border-blue-400 transition">MF</span>
+                </label>
+                <label class="pos-checkbox" data-pos="DF">
+                  <input type="checkbox" value="DF" class="hidden" />
+                  <span class="block text-center py-2 px-3 rounded-lg border border-gray-600 cursor-pointer text-sm font-semibold hover:border-green-400 transition">DF</span>
+                </label>
+                <label class="pos-checkbox" data-pos="GK">
+                  <input type="checkbox" value="GK" class="hidden" />
+                  <span class="block text-center py-2 px-3 rounded-lg border border-gray-600 cursor-pointer text-sm font-semibold hover:border-yellow-400 transition">GK</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div>
+              <label class="block text-sm text-gray-400 mb-2">Tự đánh giá chỉ số (1-99)</label>
+              <div class="grid grid-cols-3 gap-2" id="stats-inputs">
+                <div class="stat-input-group" data-field="pace" data-label="PAC"></div>
+                <div class="stat-input-group" data-field="shooting" data-label="SHO"></div>
+                <div class="stat-input-group" data-field="passing" data-label="PAS"></div>
+                <div class="stat-input-group" data-field="dribbling" data-label="DRI"></div>
+                <div class="stat-input-group" data-field="defending" data-label="DEF"></div>
+                <div class="stat-input-group" data-field="physical" data-label="PHY"></div>
+              </div>
+              <div id="gk-stats" class="hidden grid grid-cols-3 gap-2 mt-2">
+                <div class="stat-input-group" data-field="gk_diving" data-label="DIV"></div>
+                <div class="stat-input-group" data-field="gk_handling" data-label="HAN"></div>
+                <div class="stat-input-group" data-field="gk_reflexes" data-label="REF"></div>
+              </div>
+            </div>
+
+            <div id="register-error" class="hidden text-red-400 text-sm text-center"></div>
+            <div id="register-success" class="hidden text-green-400 text-sm text-center"></div>
+            <button onclick="handleRegister()"
+              class="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-3 rounded-lg transition-colors">
+              <i class="fas fa-user-plus mr-2"></i> Đăng ký
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APP SHELL -->
+  <div id="app-shell" class="hidden min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar (Desktop) -->
+    <aside class="hidden md:flex flex-col w-64 bg-gray-800 border-r border-gray-700 fixed h-full z-20">
+      <div class="p-6 border-b border-gray-700">
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">⚽</span>
+          <div>
+            <h1 class="font-bold text-white text-lg leading-none">Toneri FC</h1>
+            <p class="text-gray-400 text-xs mt-0.5">Football Club</p>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1" id="sidebar-nav">
+        <a href="#dashboard" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-700 transition" data-page="dashboard">
+          <i class="fas fa-home w-5"></i> Dashboard
+        </a>
+        <a href="#matches" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-700 transition" data-page="matches">
+          <i class="fas fa-calendar w-5"></i> Lịch thi đấu
+        </a>
+        <a href="#history" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-700 transition" data-page="history">
+          <i class="fas fa-history w-5"></i> Lịch sử
+        </a>
+        <a href="#leaderboard" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-700 transition" data-page="leaderboard">
+          <i class="fas fa-trophy w-5"></i> Bảng xếp hạng
+        </a>
+        <a href="#profile" class="nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-700 transition" data-page="profile">
+          <i class="fas fa-user w-5"></i> Hồ sơ
+        </a>
+        <a href="#admin" id="admin-link" class="nav-link hidden flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:text-white hover:bg-gray-700 transition" data-page="admin">
+          <i class="fas fa-cog w-5"></i> Admin
+        </a>
+      </nav>
+      <div class="p-4 border-t border-gray-700">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center font-bold text-white" id="sidebar-avatar">?</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-white text-sm font-semibold truncate" id="sidebar-name">Loading...</p>
+            <p class="text-gray-400 text-xs" id="sidebar-pos">-</p>
+          </div>
+        </div>
+        <button onclick="handleLogout()" class="w-full text-gray-400 hover:text-red-400 text-sm transition flex items-center gap-2 px-2">
+          <i class="fas fa-sign-out-alt"></i> Đăng xuất
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 pb-20 md:pb-0">
+      <!-- Top bar (mobile) -->
+      <div class="md:hidden flex items-center justify-between px-4 py-3 bg-gray-800 border-b border-gray-700 sticky top-0 z-10">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">⚽</span>
+          <span class="font-bold text-white">Toneri FC</span>
+        </div>
+        <button onclick="handleLogout()" class="text-gray-400 hover:text-red-400 transition">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+
+      <!-- Page Content -->
+      <div id="page-content" class="p-4 md:p-6 max-w-5xl mx-auto"></div>
+    </main>
+
+    <!-- Bottom Nav (Mobile) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 z-20 flex">
+      <a href="#dashboard" class="mobile-nav flex-1 flex flex-col items-center py-2 text-gray-400 hover:text-green-400 transition" data-page="dashboard">
+        <i class="fas fa-home text-lg"></i>
+        <span class="text-xs mt-0.5">Home</span>
+      </a>
+      <a href="#matches" class="mobile-nav flex-1 flex flex-col items-center py-2 text-gray-400 hover:text-green-400 transition" data-page="matches">
+        <i class="fas fa-calendar text-lg"></i>
+        <span class="text-xs mt-0.5">Lịch</span>
+      </a>
+      <a href="#history" class="mobile-nav flex-1 flex flex-col items-center py-2 text-gray-400 hover:text-green-400 transition" data-page="history">
+        <i class="fas fa-history text-lg"></i>
+        <span class="text-xs mt-0.5">Lịch sử</span>
+      </a>
+      <a href="#leaderboard" class="mobile-nav flex-1 flex flex-col items-center py-2 text-gray-400 hover:text-green-400 transition" data-page="leaderboard">
+        <i class="fas fa-trophy text-lg"></i>
+        <span class="text-xs mt-0.5">BXH</span>
+      </a>
+      <a href="#profile" class="mobile-nav flex-1 flex flex-col items-center py-2 text-gray-400 hover:text-green-400 transition" data-page="profile">
+        <i class="fas fa-user text-lg"></i>
+        <span class="text-xs mt-0.5">Hồ sơ</span>
+      </a>
+      <a href="#admin" id="admin-mobile-link" class="mobile-nav hidden flex-1 flex flex-col items-center py-2 text-gray-400 hover:text-green-400 transition" data-page="admin">
+        <i class="fas fa-cog text-lg"></i>
+        <span class="text-xs mt-0.5">Admin</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div id="toast-content" class="px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium flex items-center gap-2 transition-all"></div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal-overlay" class="hidden fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4" onclick="closeModal(event)">
+    <div id="modal-content" class="bg-gray-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loading-overlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-gray-800 rounded-2xl p-6 flex items-center gap-4">
+      <div class="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+      <span class="text-white font-medium">Đang xử lý...</span>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/pages/dashboard.js"></script>
+  <script src="js/pages/matches.js"></script>
+  <script src="js/pages/formation.js"></script>
+  <script src="js/pages/live.js"></script>
+  <script src="js/pages/history.js"></script>
+  <script src="js/pages/leaderboard.js"></script>
+  <script src="js/pages/admin.js"></script>
+  <script src="js/pages/profile.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
